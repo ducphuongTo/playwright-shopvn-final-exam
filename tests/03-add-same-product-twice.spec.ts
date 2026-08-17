@@ -1,21 +1,41 @@
 import { test, expect } from '../core/hooks/hooks';
 
-test('Add the same product twice — quantity increments correctly', async ({ page, loginPage, homePage, testData, cleanCart }) => {
-  // Clean cart before test
-  await cleanCart();
-  
-  await loginPage.goto();
-  await loginPage.login(testData.login.validUser.username, testData.login.validUser.password);
-  await homePage.goto();
-  await homePage.addToCart(testData.products.singleProduct.name);
-  await homePage.addToCart(testData.products.singleProduct.name);
-  await homePage.openCart();
-  await homePage.takeScreenshot('cart-quantity-2');
+test.describe('Scenario 3 — Add the same product twice', () => {
+  test('Add the same product twice — quantity increments correctly', async ({
+    page,
+    loginPage,
+    homePage,
+    testData,
+    cleanCart,
+  }) => {
+    await cleanCart();
 
-  const productRow = page
-    .locator('.cart-item')
-    .filter({ hasText: testData.products.singleProduct.name });
+    await test.step('Login with valid credentials', async () => {
+      await loginPage.goto();
+      await loginPage.login(
+        testData.login.validUser.username,
+        testData.login.validUser.password,
+      );
+    });
 
-  await expect(productRow).toHaveCount(1);
-  await expect(productRow.getByText('2', { exact: true })).toBeVisible();
+    await test.step('Add the same product to cart twice', async () => {
+      await homePage.goto();
+      await homePage.addToCart(testData.products.singleProduct.name);
+      await homePage.addToCart(testData.products.singleProduct.name);
+    });
+
+    await test.step('Open the cart and take a screenshot', async () => {
+      await homePage.openCart();
+      await homePage.takeScreenshot('cart-quantity-2');
+    });
+
+    await test.step('The product appears as a single row with quantity 2', async () => {
+      const productRow = page
+        .locator('.cart-item')
+        .filter({ hasText: testData.products.singleProduct.name });
+
+      await expect(productRow).toHaveCount(1);
+      await expect(productRow.getByText('2', { exact: true })).toBeVisible();
+    });
+  });
 });

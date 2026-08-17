@@ -3,7 +3,8 @@ import { loadJsonData } from '../core/fixtures/testData';
 
 const data = loadJsonData();
 
-test('Advanced — Verify Orders page (seed the order via API)', async ({ page, loginPage, apiClient }) => {
+test.describe('Scenario 7 — Orders page, seeded via the API', () => {
+  test('Advanced — Verify Orders page (seed the order via API)', async ({ page, loginPage, apiClient }) => {
   await loginPage.goto();
   await loginPage.login(data.login.validUser.username, data.login.validUser.password);
 
@@ -15,4 +16,5 @@ test('Advanced — Verify Orders page (seed the order via API)', async ({ page, 
   await page.goto('/orders');
   await expect(page.locator('body')).toContainText(/Lịch sử mua hàng|Đơn hàng|Orders|Order/i);
   await page.screenshot({ path: 'test-results/orders-page-screenshot.png', fullPage: true });
+});
 });

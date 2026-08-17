@@ -1,27 +1,39 @@
 import { test, expect } from '../core/hooks/hooks';
-import { loadJsonData } from '../core/fixtures/testData';
 
-const data = loadJsonData();
+test.describe('Scenario 2 — Add a single product to cart', () => {
+  test('Add a single product to cart — verify quantity & cart page', async ({
+    loginPage,
+    homePage,
+    page,
+    testData,
+    cleanCart,
+  }) => {
+    await cleanCart();
 
-test.beforeEach(async ({ page }) => {
-  // Clear cart before each test - navigate to home first
-  try {
-    await page.goto('/home', { waitUntil: 'load' });
-    await page.evaluate(() => localStorage.removeItem('cart'));
-    await page.evaluate(() => sessionStorage.clear());
-  } catch (error) {
-    console.log('beforeEach navigation error:', error);
-  }
-});
+    await test.step('Login with valid credentials', async () => {
+      await loginPage.goto();
+      await loginPage.login(
+        testData.login.validUser.username,
+        testData.login.validUser.password,
+      );
+    });
 
-test('Add a single product to cart — verify quantity & cart page', async ({ page, loginPage, homePage }) => {
-  await loginPage.goto();
-  await loginPage.login(data.login.validUser.username, data.login.validUser.password);
-  await homePage.goto();
-  await homePage.addToCart(data.products.singleProduct.name);
-  await homePage.openCart();
-  await expect(page).toHaveURL(/\/cart/);
-  await homePage.takeScreenshot('cart-with-single-product');
-  await expect(page.locator('body')).toContainText(data.products.singleProduct.name);
-  await expect(page.locator('body')).toContainText('1');
+    await test.step('Add the product to cart from the home page', async () => {
+      await homePage.goto();
+      await homePage.addToCart(testData.products.singleProduct.name);
+    });
+
+    await test.step('Open the cart page', async () => {
+      await homePage.openCart();
+      await expect(page).toHaveURL(/\/cart/);
+    });
+
+    await test.step('The cart shows the correct product and quantity 1', async () => {
+      await homePage.takeScreenshot('cart-with-single-product');
+      await expect(page.locator('body')).toContainText(
+        testData.products.singleProduct.name,
+      );
+      await expect(page.locator('body')).toContainText('1');
+    });
+  });
 });

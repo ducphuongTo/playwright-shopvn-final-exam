@@ -1,9 +1,9 @@
 import { test as base, BrowserContext, Page, expect } from '@playwright/test';
-import { LoginPage } from '../../page_objects/loginPage';
-import { HomePage } from '../../page_objects/homePage';
-import { CartPage } from '../../page_objects/cartPage';
-import { CheckoutPage } from '../../page_objects/checkoutPage';
-import { ProfilePage } from '../../page_objects/profilePage';
+import { LoginPage } from '../../page_objects/login-page';
+import { HomePage } from '../../page_objects/home-page';
+import { CartPage } from '../../page_objects/cart-page';
+import { CheckoutPage } from '../../page_objects/checkout-page';
+import { ProfilePage } from '../../page_objects/profile-page';
 import { ApiClient } from '../api/apiClient';
 import { loadJsonData } from '../fixtures/testData';
 
