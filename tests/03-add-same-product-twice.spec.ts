@@ -11,5 +11,11 @@ test('Add the same product twice — quantity increments correctly', async ({ pa
   await homePage.addToCart(testData.products.singleProduct.name);
   await homePage.openCart();
   await homePage.takeScreenshot('cart-quantity-2');
-  await expect(page.locator('body')).toContainText('2');
+
+  const productRow = page
+    .locator('.cart-item')
+    .filter({ hasText: testData.products.singleProduct.name });
+
+  await expect(productRow).toHaveCount(1);
+  await expect(productRow.getByText('2', { exact: true })).toBeVisible();
 });

@@ -2,11 +2,11 @@ import { APIRequestContext, request } from '@playwright/test';
 
 export class ApiClient {
   private requestContext: APIRequestContext;
-  private baseUrl = 'https://testing.platformforge.dev/api';
+  private baseUrl = 'https://testing.platformforge.dev/api/';
   private token = '';
 
   constructor(baseUrl?: string) {
-    this.baseUrl = baseUrl ?? this.baseUrl;
+    this.baseUrl = `${(baseUrl ?? this.baseUrl).replace(/\/+$/, '')}/`;
   }
 
   setToken(token?: string) {
@@ -28,7 +28,7 @@ export class ApiClient {
   }
 
   async login(username: string, password: string) {
-    const response = await this.requestContext.post('/auth/login', {
+    const response = await this.requestContext.post('auth/login', {
       data: { username, password },
     });
     const payload = await response.json().catch(() => ({}));
@@ -37,15 +37,15 @@ export class ApiClient {
   }
 
   async getProducts() {
-    return this.requestContext.get('/products', { headers: this.authHeaders() });
+    return this.requestContext.get('products', { headers: this.authHeaders() });
   }
 
   async getCart() {
-    return this.requestContext.get('/cart', { headers: this.authHeaders() });
+    return this.requestContext.get('cart', { headers: this.authHeaders() });
   }
 
   async updateCart(cart: unknown) {
-    return this.requestContext.put('/cart', { data: cart, headers: this.authHeaders() });
+    return this.requestContext.put('cart', { data: cart, headers: this.authHeaders() });
   }
 
   async clearCart() {
@@ -53,19 +53,19 @@ export class ApiClient {
   }
 
   async createOrder(order: unknown) {
-    return this.requestContext.post('/orders', { data: order, headers: this.authHeaders() });
+    return this.requestContext.post('orders', { data: order, headers: this.authHeaders() });
   }
 
   async getOrders() {
-    return this.requestContext.get('/orders', { headers: this.authHeaders() });
+    return this.requestContext.get('orders', { headers: this.authHeaders() });
   }
 
   async getProfile() {
-    return this.requestContext.get('/profile', { headers: this.authHeaders() });
+    return this.requestContext.get('profile', { headers: this.authHeaders() });
   }
 
   async updateProfile(payload: unknown) {
-    return this.requestContext.patch('/profile', { data: payload, headers: this.authHeaders() });
+    return this.requestContext.patch('profile', { data: payload, headers: this.authHeaders() });
   }
 
   async dispose() {

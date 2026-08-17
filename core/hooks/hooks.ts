@@ -90,17 +90,30 @@ export const test = base.extend<TestFixtures>({
       localStorage.clear();
     });
   },
-  // Provide function to clean cart via API (better than UI interactions)
-  cleanCart: async ({ apiClient }, use) => {
+  // Authenticate once, then provide a reliable API-based cart reset.
+  cleanCart: async ({ apiClient, testData }, use) => {
+    const loginResponse = await apiClient.login(
+      testData.login.validUser.username,
+      testData.login.validUser.password,
+    );
+    expect(
+      loginResponse.ok(),
+      `API login failed with status ${loginResponse.status()}`,
+    ).toBeTruthy();
+
     const cleanCartFunction = async () => {
-      try {
-        // Clear cart via API
-        await apiClient.clearCart();
-      } catch (error) {
-        console.log('Cart cleanup via API failed:', error);
-      }
+      const response = await apiClient.clearCart();
+      expect(
+        response.ok(),
+        `Cart cleanup failed with status ${response.status()}`,
+      ).toBeTruthy();
     };
+
     await use(cleanCartFunction);
+
+    // Keep the shared practice account isolated from following tests,
+    // including when the test body fails.
+    await cleanCartFunction();
   },
 });
 
