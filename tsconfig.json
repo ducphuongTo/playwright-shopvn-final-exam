@@ -1,0 +1,30 @@
+{
+    "compilerOptions": {
+        "types": [
+            "node"
+        ],
+        "target": "ES6",
+        "module": "es6",
+        "sourceMap": true,
+        "resolveJsonModule": true,
+        "forceConsistentCasingInFileNames": true,
+        "allowSyntheticDefaultImports": true,
+        "paths": {
+            "@core/fixtures/*": [
+                "./core/fixtures/*"
+            ],
+            "@core/utils/*": [
+                "./core/utils/*"
+            ],
+            "@page-objects/*": [
+                "./page-objects/*"
+            ],
+            "@api/*": [
+                "./core/api/*"
+            ],
+            "@core/constants/*": [
+                "./core/constants/*"
+            ]
+        }
+    }
+}
