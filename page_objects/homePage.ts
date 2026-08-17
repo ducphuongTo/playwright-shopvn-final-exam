@@ -21,30 +21,26 @@ export class HomePage extends BasePage {
   }
 
   async addToCart(productName: string) {
-    // Ensure we're on home page and products are loaded
     if (!this.page.url().includes('/home')) {
       await this.goto();
     }
-    // Wait for button to be visible and clickable
-    await this.page.waitForSelector('button:has-text("Thêm vào giỏ")', { timeout: 15000 }).catch(() => {
-      console.log('Button not found, retrying navigation...');
+
+    const productCard = this.page.locator('.product-card').filter({
+      has: this.page.getByText(productName, { exact: true }),
     });
-    await this.page.waitForTimeout(1000);
-    const button = this.page.locator('button').filter({ hasText: 'Thêm vào giỏ' }).first();
-    try {
-      await button.waitFor({ state: 'visible', timeout: 10000 });
-      await button.click();
-    } catch (error) {
-      console.log('Error clicking button, retrying:', error);
-      await this.goto();
-      await this.page.waitForTimeout(1000);
-      await button.click();
-    }
-    await this.page.waitForTimeout(800);
+    await expect(productCard, `Product card for "${productName}"`).toHaveCount(1);
+
+    const button = productCard.getByRole('button', { name: 'Thêm vào giỏ' });
+    await expect(button, `Add-to-cart button for "${productName}"`).toBeVisible();
+
+    const cartSaved = this.waitForCartResponse('PUT');
+    await button.click();
+    await cartSaved;
   }
 
   async openCart() {
     await this.cartButton.click();
+    await expect(this.page).toHaveURL(/\/cart/);
   }
 
   async expectCartItemCount(expected: number) {
@@ -53,5 +49,17 @@ export class HomePage extends BasePage {
 
   async expectProductVisible(productName: string) {
     await expect(this.page.getByText(productName, { exact: true })).toBeVisible();
+  }
+
+  private async waitForCartResponse(method: 'PUT') {
+    const response = await this.page.waitForResponse((candidate) =>
+      candidate.url().includes('/api/cart') &&
+      candidate.request().method() === method,
+    );
+
+    expect(
+      response.ok(),
+      `Cart ${method} failed with status ${response.status()}`,
+    ).toBeTruthy();
   }
 }

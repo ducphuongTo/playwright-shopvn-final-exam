@@ -3,20 +3,51 @@ import { loadJsonData } from '../core/fixtures/testData';
 
 const data = loadJsonData();
 
-test('Remove item from cart — one item and multiple items', async ({ page, loginPage, homePage, cartPage }) => {
-  await loginPage.goto();
-  await loginPage.login(data.login.validUser.username, data.login.validUser.password);
+test.describe('Scenario 4 — Remove items from the cart', () => {
+  test.beforeEach(async ({ cleanCart, loginPage }) => {
+    await cleanCart();
 
-  await homePage.goto();
-  await homePage.addToCart(data.products.singleProduct.name);
-  await homePage.openCart();
-  await cartPage.removeFirstItem();
-  await expect(page.locator('body')).not.toContainText(data.products.singleProduct.name);
+    await loginPage.goto();
+    await loginPage.login(
+      data.login.validUser.username,
+      data.login.validUser.password,
+    );
+  });
 
-  await homePage.goto();
-  await homePage.addToCart(data.products.singleProduct.name);
-  await homePage.addToCart(data.products.singleProduct.name);
-  await homePage.openCart();
-  await cartPage.removeAllItems();
-  await expect(page.locator('body')).not.toContainText(data.products.singleProduct.name);
+  test(
+    'Remove one item from cart',
+    async ({ homePage, cartPage }) => {
+      const productName = data.products.singleProduct.name;
+
+      await homePage.goto();
+      await homePage.addToCart(productName);
+      await homePage.openCart();
+
+      await cartPage.removeFirstItem();
+
+      await expect(cartPage.productRow(productName)).toHaveCount(0);
+    },
+  );
+
+  test(
+    'Remove all items from cart',
+    async ({ homePage, cartPage }) => {
+      const productName = data.products.singleProduct.name;
+
+      await homePage.goto();
+      await homePage.addToCart(productName);
+      await homePage.addToCart(productName);
+      await homePage.openCart();
+
+      await expect(cartPage.productRow(productName)).toHaveCount(1);
+
+      await expect
+        .poll(() => cartPage.getProductQuantity(productName))
+        .toBe('2');
+
+      await cartPage.removeAllItems();
+
+      await expect(cartPage.itemRows).toHaveCount(0);
+    },
+  );
 });

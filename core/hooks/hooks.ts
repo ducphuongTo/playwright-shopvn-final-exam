@@ -20,6 +20,13 @@ export type TestFixtures = {
   testData: ReturnType<typeof loadJsonData>;
   authenticatedUser: { page: Page; apiClient: ApiClient; token: string };
   cleanCart: () => Promise<void>;
+  // ── Scenario-6 fixtures ──────────────────────────────────────────────────
+  /** Performs a UI login and leaves the browser in the authenticated state. */
+  signedIn: void;
+  /** ApiClient pre-authenticated with the same token the UI has. */
+  api: ApiClient;
+  /** Register async teardown callbacks here; they run after the test body. */
+  cleanupTasks: Array<() => Promise<void>>;
 };
 
 export const test = base.extend<TestFixtures>({
@@ -55,7 +62,7 @@ export const test = base.extend<TestFixtures>({
     await page.close();
   },
   // Load test data once and reuse across tests
-  testData: async ({}, use) => {
+  testData: async ({}, use: (data: ReturnType<typeof loadJsonData>) => Promise<void>) => {
     const data = loadJsonData();
     await use(data);
   },
@@ -114,6 +121,53 @@ export const test = base.extend<TestFixtures>({
     // Keep the shared practice account isolated from following tests,
     // including when the test body fails.
     await cleanCartFunction();
+  },
+
+  // ── Scenario-6 fixtures ──────────────────────────────────────────────────
+
+  /**
+   * `signedIn` — navigates to /login, fills credentials, and waits until
+   * the browser lands on an authenticated route.  Tests that depend on this
+   * fixture start with a logged-in browser session.
+   */
+  signedIn: async ({ page, testData }, use) => {
+    await page.goto('/login', { waitUntil: 'load' });
+    const loginPage = new LoginPage(page);
+    await loginPage.login(
+      testData.login.validUser.username,
+      testData.login.validUser.password,
+    );
+    await use();
+  },
+
+  /**
+   * `api` — an ApiClient whose Bearer token is taken from the browser's
+   * sessionStorage (set by the `signedIn` fixture).  This ensures the UI
+   * and the API calls act as the same user in the same test run.
+   */
+  api: async ({ page, signedIn }, use) => {
+    const token = await page.evaluate(() => sessionStorage.getItem('token'));
+    const client = new ApiClient();
+    await client.init();
+    client.setToken(token ?? undefined);
+    await use(client);
+    await client.dispose();
+  },
+
+  /**
+   * `cleanupTasks` — an empty array that the test body populates with async
+   * teardown callbacks.  All tasks run after `use()` returns, even when the
+   * test fails, so mutations are always rolled back.
+   */
+  cleanupTasks: async ({}, use) => {
+    const tasks: Array<() => Promise<void>> = [];
+    await use(tasks);
+    // Run teardown in registration order (FIFO).
+    for (const task of tasks) {
+      await task().catch((err) =>
+        console.error('cleanupTask failed:', err),
+      );
+    }
   },
 });
 

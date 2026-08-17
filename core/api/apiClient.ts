@@ -1,7 +1,7 @@
 import { APIRequestContext, request } from '@playwright/test';
 
 export class ApiClient {
-  private requestContext: APIRequestContext;
+  private requestContext!: APIRequestContext;
   private baseUrl = 'https://testing.platformforge.dev/api/';
   private token = '';
 
@@ -28,7 +28,8 @@ export class ApiClient {
   }
 
   async login(username: string, password: string) {
-    const response = await this.requestContext.post('auth/login', {
+    if (!this.requestContext) await this.init();
+    const response = await this.requestContext!.post('auth/login', {
       data: { username, password },
     });
     const payload = await response.json().catch(() => ({}));
@@ -37,7 +38,7 @@ export class ApiClient {
   }
 
   async getProducts() {
-    return this.requestContext.get('products', { headers: this.authHeaders() });
+    return this.requestContext!.get('products', { headers: this.authHeaders() });
   }
 
   async getCart() {
@@ -60,12 +61,25 @@ export class ApiClient {
     return this.requestContext.get('orders', { headers: this.authHeaders() });
   }
 
-  async getProfile() {
+  async getProfile(): Promise<{ name: string; [key: string]: unknown }> {
+    const response = await this.requestContext.get('profile', { headers: this.authHeaders() });
+    const body = await response.json().catch(() => ({}));
+    // Support both flat { name } and nested { data: { name } } shapes
+    return body.data ?? body;
+  }
+
+  /** Raw APIResponse — kept for tests that need to assert status codes. */
+  async getProfileRaw() {
     return this.requestContext.get('profile', { headers: this.authHeaders() });
   }
 
   async updateProfile(payload: unknown) {
     return this.requestContext.patch('profile', { data: payload, headers: this.authHeaders() });
+  }
+
+  /** Convenience wrapper used by the profile cleanup fixture. */
+  async updateName(name: string) {
+    return this.updateProfile({ name });
   }
 
   async dispose() {

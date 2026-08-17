@@ -1,0 +1,12 @@
+{
+  "fullNameUpdates": [
+    {
+      "case": "standard ASCII name",
+      "newFullName": "Automation Updated"
+    },
+    {
+      "case": "Vietnamese name with diacritics",
+      "newFullName": "Nguyễn Huỳnh Quỳnh Ni"
+    }
+  ]
+}
