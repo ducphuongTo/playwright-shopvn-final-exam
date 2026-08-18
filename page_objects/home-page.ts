@@ -17,7 +17,8 @@ export class HomePage extends BasePage {
 
   async goto() {
     await this.page.goto('/home', { waitUntil: 'load' });
-    await this.page.waitForTimeout(500);
+    // Wait for the product list to render instead of a fixed sleep.
+    await this.productButtons.first().waitFor({ state: 'visible' });
   }
 
   async addToCart(productName: string) {
@@ -41,10 +42,6 @@ export class HomePage extends BasePage {
   async openCart() {
     await this.cartButton.click();
     await expect(this.page).toHaveURL(/\/cart/);
-  }
-
-  async expectCartItemCount(expected: number) {
-    await expect(this.page.locator('text=/\d+/')).toContainText(String(expected));
   }
 
   async expectProductVisible(productName: string) {

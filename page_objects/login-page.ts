@@ -9,8 +9,8 @@ export class LoginPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.usernameInput = page.locator('input').nth(0);
-    this.passwordInput = page.locator('input').nth(1);
+    this.usernameInput = page.locator('#username');
+    this.passwordInput = page.locator('#password');
     this.loginButton = page.locator('button').filter({ hasText: 'Đăng nhập' }).first();
     this.registerLink = page.getByRole('link', { name: 'Đăng ký' });
   }
@@ -24,22 +24,14 @@ export class LoginPage extends BasePage {
     await this.usernameInput.fill(username);
     await this.passwordInput.fill(password);
     await this.loginButton.click();
-    
-    // Only wait for navigation if credentials are provided (valid login attempt)
+
     if (username && password) {
-      try {
-        // Wait for navigation and token to be stored
-        await this.page.waitForURL(/\/(home|profile|cart|orders)/, { timeout: 15000 });
-        await this.page.waitForTimeout(500);
-        // Verify token is stored
-        const token = await this.page.evaluate(() => sessionStorage.getItem('token'));
-        if (!token) {
-          throw new Error('Token not found in sessionStorage after login');
-        }
-      } catch (error) {
-        console.log('Login navigation error:', error);
-        throw error;
-      }
+      await this.page.waitForURL(/\/(home|profile|cart|orders)/, { timeout: 15000 });
+      await expect
+        .poll(() => this.page.evaluate(() => sessionStorage.getItem('token')), {
+          message: 'Token not found in sessionStorage after login',
+        })
+        .toBeTruthy();
     }
   }
 

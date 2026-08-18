@@ -1,8 +1,9 @@
 import { APIRequestContext, request } from '@playwright/test';
+import { API_BASE_URL } from '../config/env';
 
 export class ApiClient {
   private requestContext!: APIRequestContext;
-  private baseUrl = 'https://testing.platformforge.dev/api/';
+  private baseUrl = API_BASE_URL;
   private token = '';
 
   constructor(baseUrl?: string) {

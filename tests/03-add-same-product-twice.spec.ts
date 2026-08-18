@@ -3,20 +3,12 @@ import { test, expect } from '../core/hooks/hooks';
 test.describe('Scenario 3 — Add the same product twice', () => {
   test('Add the same product twice — quantity increments correctly', async ({
     page,
-    loginPage,
+    signedIn,
     homePage,
     testData,
     cleanCart,
   }) => {
     await cleanCart();
-
-    await test.step('Login with valid credentials', async () => {
-      await loginPage.goto();
-      await loginPage.login(
-        testData.login.validUser.username,
-        testData.login.validUser.password,
-      );
-    });
 
     await test.step('Add the same product to cart twice', async () => {
       await homePage.goto();

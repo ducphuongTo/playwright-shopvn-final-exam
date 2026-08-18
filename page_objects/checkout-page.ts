@@ -15,7 +15,7 @@ export class CheckoutPage extends BasePage {
     this.placeOrderButton = page.getByTestId('checkout-submit');
   }
 
-  async fillReceiverInfo(fullName: string, phone: string, address: string, city: string, note: string) {
+  async fillReceiverInfo(fullName: string, phone: string, address: string) {
     await this.fullNameInput.fill(fullName);
     await this.phoneInput.fill(phone);
     await this.addressInput.fill(address);

@@ -1,21 +1,13 @@
 import { test, expect } from '../core/hooks/hooks';
-import { loadJsonData } from '../core/fixtures/testData';
-
-const data = loadJsonData();
 
 test.describe('Scenario 4 — Remove items from the cart', () => {
-  test.beforeEach(async ({ cleanCart, loginPage }) => {
+  // `signedIn` logs the browser in; `cleanCart` resets the cart via API.
+  test.beforeEach(async ({ cleanCart, signedIn }) => {
     await cleanCart();
-
-    await loginPage.goto();
-    await loginPage.login(
-      data.login.validUser.username,
-      data.login.validUser.password,
-    );
   });
 
-  test('Remove one item from cart', async ({ homePage, cartPage }) => {
-    const productName = data.products.singleProduct.name;
+  test('Remove one item from cart', async ({ homePage, cartPage, testData }) => {
+    const productName = testData.products.singleProduct.name;
 
     await test.step('Add the product to cart', async () => {
       await homePage.goto();
@@ -32,8 +24,8 @@ test.describe('Scenario 4 — Remove items from the cart', () => {
     });
   });
 
-  test('Remove all items from cart', async ({ homePage, cartPage }) => {
-    const productName = data.products.singleProduct.name;
+  test('Remove all items from cart', async ({ homePage, cartPage, testData }) => {
+    const productName = testData.products.singleProduct.name;
 
     await test.step('Add the product twice to have quantity 2', async () => {
       await homePage.goto();
